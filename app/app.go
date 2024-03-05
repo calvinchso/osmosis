@@ -32,6 +32,7 @@ import (
 	"github.com/cosmos/ibc-go/v7/modules/apps/transfer"
 	ibc "github.com/cosmos/ibc-go/v7/modules/core"
 
+	poolsingester "github.com/osmosis-labs/osmosis/v23/ingest/pools/ingester"
 	"github.com/osmosis-labs/osmosis/v23/ingest/sqs"
 	"github.com/osmosis-labs/osmosis/v23/ingest/sqs/domain"
 
@@ -283,6 +284,13 @@ func NewOsmosisApp(
 		// Set the sidecar query server ingester to the ingest manager.
 		app.IngestManager.RegisterIngester(sqsIngester)
 	}
+
+	poolsIngester, err := poolsingester.DefaultConfig.Initialize(app.ConcentratedLiquidityKeeper, app.BankKeeper)
+	if err != nil {
+		// To be implemented: switch to external service as a fallback solution
+		panic(err)
+	}
+	app.IngestManager.RegisterIngester(poolsIngester)
 
 	// TODO: There is a bug here, where we register the govRouter routes in InitNormalKeepers and then
 	// call setupHooks afterwards. Therefore, if a gov proposal needs to call a method and that method calls a
